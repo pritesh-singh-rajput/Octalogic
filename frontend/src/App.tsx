@@ -1,7 +1,7 @@
-import StepForm from "./components/StepForm";
+import VehicleBookingForm from "./pages/Form";
 
 function App() {
-  return <StepForm />;
+  return <VehicleBookingForm/>;
 }
 
 export default App;
