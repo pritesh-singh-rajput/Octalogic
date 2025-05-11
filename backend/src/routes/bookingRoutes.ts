@@ -1,9 +1,10 @@
 import express from 'express'
-import { getVehicles, submitBooking } from '../controllers/bookingController'
+import { getVehiclesType, getVehicleModels, submitBooking } from '../controllers/bookingController'
 
 const router = express.Router()
 
-router.get('/vehicles', getVehicles)
+router.get('/vehicles', getVehiclesType)
+router.get('/models', getVehicleModels)
 router.post('/book', submitBooking)
 
 export default router

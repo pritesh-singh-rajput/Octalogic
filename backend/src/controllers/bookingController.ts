@@ -3,17 +3,53 @@ import { Request, Response, NextFunction } from 'express';
 
 const prisma = new PrismaClient();
 
-export const getVehicles = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getVehiclesType = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const wheels = Number(req.query.wheels);
     const vehicles = await prisma.vehicle.findMany({
       where: wheels ? { wheels } : {},
+      select: {
+        id: true,
+        type: true,
+      },
     });
-    res.json(vehicles);
+
+    // Optional: remove duplicates if type is repeated
+    const uniqueTypes = Array.from(
+      new Map(vehicles.map((v) => [v.type, v])).values()
+    );
+
+    res.json(uniqueTypes);
   } catch (error) {
-    next(error); // Pass errors to Express error middleware
+    next(error);
   }
 };
+
+export const getVehicleModels = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const type = req.query.type as string;
+
+    if (!type) {
+      res.status(400).json({ message: "Vehicle type is required." });
+      return;
+    }
+
+    const vehicles = await prisma.vehicle.findMany({
+      where: { type },
+      select: {
+        id: true,
+        model: true,
+      },
+    });
+
+    res.json(vehicles);
+  } catch (error) {
+    console.error("Error fetching vehicle models:", error);
+    next(error);
+  }
+};
+
+
 
 interface BookingBody {
   firstName: string;
@@ -23,7 +59,18 @@ interface BookingBody {
   vehicleId: string;
 }
 
-export const submitBooking = async (req: Request<{}, {}, BookingBody>, res: Response, next: NextFunction): Promise<void> => {
+// Utility to generate a random 6-digit booking ID
+function generateBookingId(): string {
+  const randomNumber = Math.floor(100000 + Math.random() * 900000);
+  return `BK-${randomNumber}`;
+}
+
+
+export const submitBooking = async (
+  req: Request<{}, {}, BookingBody>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { firstName, lastName, startDate, endDate, vehicleId } = req.body;
 
@@ -47,8 +94,11 @@ export const submitBooking = async (req: Request<{}, {}, BookingBody>, res: Resp
       return;
     }
 
+    const bookingId = generateBookingId();
+
     const booking = await prisma.booking.create({
       data: {
+        bookingId,
         firstName,
         lastName,
         startDate: new Date(startDate),
@@ -57,9 +107,12 @@ export const submitBooking = async (req: Request<{}, {}, BookingBody>, res: Resp
       },
     });
 
-    res.status(201).json(booking);
+    res.status(201).json({
+      success: true,
+      bookingId: booking.bookingId,
+    });
   } catch (error) {
     console.error('Booking error:', error);
-    next(error); // Pass errors to Express error middleware
+    next(error);
   }
 };

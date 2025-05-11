@@ -21,6 +21,7 @@ export default function VehicleBookingForm() {
     wheels: "",
     vehicleType: "",
     vehicleModel: "",
+    vehicleId:"",
     startDate: "",
     endDate: "",
   });
@@ -36,6 +37,7 @@ export default function VehicleBookingForm() {
     "Booking Dates",
   ];
 
+  //On wheel select
   useEffect(() => {
     if (formData.wheels) {
       setLoading(true);
@@ -53,6 +55,7 @@ export default function VehicleBookingForm() {
     }
   }, [formData.wheels]);
 
+  //On Vehicle Type select
   useEffect(() => {
     if (formData.vehicleType) {
       setLoading(true);
@@ -160,11 +163,11 @@ export default function VehicleBookingForm() {
     try {
       const result: any = await submitBooking(formData);
       setSubmitSuccess(result);
-    } catch (error) {
+    } catch (error:any) {
       console.error("Error submitting booking:", error);
       setSubmitSuccess({
         success: false,
-        error: "Failed to submit booking. Please try again.",
+        error: error.message,
       });
     } finally {
       setLoading(false);
@@ -178,6 +181,7 @@ export default function VehicleBookingForm() {
       wheels: "",
       vehicleType: "",
       vehicleModel: "",
+      vehicleId: "",
       startDate: "",
       endDate: "",
     });
@@ -257,11 +261,11 @@ export default function VehicleBookingForm() {
                       key={type.id}
                       id={`vehicle-type-${type.id}`}
                       name="vehicleType"
-                      value={type.id.toString()}
+                      value={type.type}
                       label={type.type}
-                      checked={formData.vehicleType === type.id.toString()}
+                      checked={formData.vehicleType === type.type}
                       onChange={() =>
-                        handleChange("vehicleType", type.id.toString())
+                        handleChange("vehicleType", type.type)
                       }
                     />
                   ))}
@@ -292,11 +296,14 @@ export default function VehicleBookingForm() {
                       key={model.id}
                       id={`vehicle-model-${model.id}`}
                       name="vehicleModel"
-                      value={model.id.toString()}
-                      label={model.name}
-                      checked={formData.vehicleModel === model.id.toString()}
+                      value={model.id}
+                      label={model.model}
+                      checked={formData.vehicleId === model.id}
                       onChange={() =>
-                        handleChange("vehicleModel", model.id.toString())
+                        {
+                          handleChange("vehicleId", model.id)
+                          handleChange("vehicleModel", model.model)
+                        }
                       }
                     />
                   ))}
